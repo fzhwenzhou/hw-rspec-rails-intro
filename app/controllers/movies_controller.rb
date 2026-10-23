@@ -38,6 +38,10 @@ class MoviesController < ApplicationController
     redirect_to movie_path(@movie)
   end
 
+  def search_tmdb
+    @movies = Movie.find_in_tmdb(params[:search_terms])
+  end
+
   def destroy
     @movie = Movie.find(params[:id])
     @movie.destroy
