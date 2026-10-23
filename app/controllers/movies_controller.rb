@@ -39,7 +39,22 @@ class MoviesController < ApplicationController
   end
 
   def search_tmdb
-    @movies = Movie.find_in_tmdb(params[:search_terms])
+    return if params[:title].nil? # first visit: just show the search form
+
+    if params[:title].blank?
+      flash.now[:danger] = 'Please fill in all required fields!'
+      return
+    end
+
+    @movies = Movie.find_in_tmdb(title: params[:title], release_year: params[:release_year],
+                                 language: params[:language])
+    flash.now[:info] = 'No movies found with given parameters!' if @movies.empty?
+  end
+
+  def add_movie
+    @movie = Movie.create!(movie_params)
+    flash[:success] = "#{@movie.title} was successfully added to RottenPotatoes."
+    redirect_to search_tmdb_path
   end
 
   def destroy
@@ -50,6 +65,10 @@ class MoviesController < ApplicationController
   end
 
   private
+
+  def movie_params
+    params.require(:movie).permit(:title, :rating, :release_date, :description)
+  end
 
   def force_index_redirect
     return unless !params.key?(:ratings) || !params.key?(:sort_by)
